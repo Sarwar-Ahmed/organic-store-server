@@ -102,6 +102,14 @@ client.connect(err => {
         
     })
 
+    app.delete('/deleteFromCart/:id', (req, res) => {
+        console.log("deleted successfully", req.params.id);
+        cartCollection.deleteOne({_id: req.params.id})
+        .then((result) => {
+            console.log(result);
+        })
+    })
+
 });
 
 

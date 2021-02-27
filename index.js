@@ -14,15 +14,15 @@ app.use(cors());
 // app.use(express.static('service'));
 // app.use(fileUpload());
 
-// const admin = require('firebase-admin');
+const admin = require('firebase-admin');
 
-// const serviceAccount = require("./config/creative-agency-by-sarwar-firebase-adminsdk-offfh-05edaf557d.json");
+const serviceAccount = require("./config/organic-store-ecommerce-firebase-adminsdk-7wdac-71c023a222.json");
 const { ObjectId } = require('mongodb');
 
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount),
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
 //   databaseURL: "https://creative-agency-by-sarwar.firebaseio.com"
-// });
+});
 
 const port = 5000;
 
@@ -32,13 +32,14 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 client.connect(err => {
    const categoriesCollection = client.db("OrganicStore").collection("categories");
    const productsCollection = client.db("OrganicStore").collection("products");
+   const cartCollection = client.db("OrganicStore").collection("cart");
 
     app.post('/addCategories', (req, res) => {
         const events = req.body;
         console.log("added");
         categoriesCollection.insertMany(events)
         .then(result => {
-            res.send(result.insertedCount)
+            res.status(200).send(result.insertedCount)
         })
     })
     app.post('/addProducts', (req, res) => {
@@ -46,22 +47,59 @@ client.connect(err => {
         console.log("added");
         productsCollection.insertMany(events)
         .then(result => {
-            res.send(result.insertedCount)
+            res.status(200).send(result.insertedCount)
         })
     })
 
     app.get('/category', (req, res) => {
         categoriesCollection.find({})
         .toArray((err, documents) => {
-            res.send(documents);
+            res.status(200).send(documents);
         })
     })
 
     app.get('/products', (req, res) => {
         productsCollection.find({})
         .toArray((err, documents) => {
-            res.send(documents);
+            res.status(200).send(documents);
         })
+    })
+
+    app.post('/addCart', (req, res) => {
+        const events = req.body;
+        console.log(events);
+        cartCollection.insertOne(events)
+        .then(result => {
+          res.status(200).send(result.insertedCount);
+        })
+    })
+
+    app.get('/cart', (req, res) => {
+        const bearer = req.headers.authorization;
+        if (bearer && bearer.startsWith('Bearer ')) {
+            const idToken = bearer.split(' ')[1];
+            admin.auth().verifyIdToken(idToken)
+                .then(function (decodedToken) {
+                    const tokenEmail = decodedToken.email;
+                    const queryEmail = req.query.email;
+                    if (tokenEmail == queryEmail) {
+                    cartCollection.find({email: queryEmail})
+                    .toArray((err, documents) => {
+                        res.status(200).send(documents);
+                    })
+                    }
+                    else{
+                        res.status(401).send('Unauthorized access');
+                    }
+                    // ...
+                }).catch(function (error) {
+                    res.status(401).send('Unauthorized access');
+                });
+        }
+        else{
+            res.status(401).send('Unauthorized access');
+        }
+        
     })
 
 });

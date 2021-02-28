@@ -33,6 +33,8 @@ client.connect(err => {
    const categoriesCollection = client.db("OrganicStore").collection("categories");
    const productsCollection = client.db("OrganicStore").collection("products");
    const cartCollection = client.db("OrganicStore").collection("cart");
+   const ordersCollection = client.db("OrganicStore").collection("orders");
+
 
     app.post('/addCategories', (req, res) => {
         const events = req.body;
@@ -103,10 +105,25 @@ client.connect(err => {
     })
 
     app.delete('/deleteFromCart/:id', (req, res) => {
-        console.log("deleted successfully", req.params.id);
         cartCollection.deleteOne({_id: req.params.id})
         .then((result) => {
             console.log(result);
+        })
+    })
+
+    app.post('/addOrder', (req, res) => {
+        const events = req.body;
+        console.log(events);
+        ordersCollection.insertOne(events)
+        .then(result => {
+          res.status(200).send(result.insertedCount);
+        })
+    })
+
+    app.get('/orders', (req, res) => {
+        ordersCollection.find({})
+        .toArray((err, documents) => {
+            res.status(200).send(documents);
         })
     })
 

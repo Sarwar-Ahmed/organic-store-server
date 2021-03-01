@@ -142,6 +142,21 @@ client.connect(err => {
         })
     })
 
+    app.post('/addAdmin', (req, res) => {
+        const events = req.body;
+        adminsCollection.insertOne(events)
+            .then(result => {
+                res.send(result.insertedCount);
+            })
+    })
+
+    app.delete('/deleteAdmin/:id', (req, res) => {
+        adminsCollection.deleteOne({_id: ObjectId(req.params.id)})
+        .then((result) => {
+            console.log(result);
+        })
+    })
+
 });
 
 

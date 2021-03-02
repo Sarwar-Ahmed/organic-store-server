@@ -21,7 +21,6 @@ const { ObjectId } = require('mongodb');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
-//   databaseURL: "https://creative-agency-by-sarwar.firebaseio.com"
 });
 
 const port = 5000;
@@ -35,24 +34,6 @@ client.connect(err => {
    const cartCollection = client.db("OrganicStore").collection("cart");
    const ordersCollection = client.db("OrganicStore").collection("orders");
    const adminsCollection = client.db("OrganicStore").collection("admins");
-
-
-    // app.post('/addCategories', (req, res) => {
-    //     const events = req.body;
-    //     console.log("added");
-    //     categoriesCollection.insertMany(events)
-    //     .then(result => {
-    //         res.status(200).send(result.insertedCount)
-    //     })
-    // })
-    // app.post('/addProducts', (req, res) => {
-    //     const events = req.body;
-    //     console.log("added");
-    //     productsCollection.insertMany(events)
-    //     .then(result => {
-    //         res.status(200).send(result.insertedCount)
-    //     })
-    // })
 
     app.get('/category', (req, res) => {
         categoriesCollection.find({})
@@ -125,6 +106,16 @@ client.connect(err => {
         ordersCollection.find({})
         .toArray((err, documents) => {
             res.status(200).send(documents);
+        })
+    })
+
+    app.patch(`/updateOrders`, (req, res) => {
+        ordersCollection.updateOne({_id: ObjectId(req.body.id)},
+        {
+            $set: {status: req.body.status}
+        })
+        .then (result => {
+            console.log(result);
         })
     })
 

@@ -37,22 +37,22 @@ client.connect(err => {
    const adminsCollection = client.db("OrganicStore").collection("admins");
 
 
-    app.post('/addCategories', (req, res) => {
-        const events = req.body;
-        console.log("added");
-        categoriesCollection.insertMany(events)
-        .then(result => {
-            res.status(200).send(result.insertedCount)
-        })
-    })
-    app.post('/addProducts', (req, res) => {
-        const events = req.body;
-        console.log("added");
-        productsCollection.insertMany(events)
-        .then(result => {
-            res.status(200).send(result.insertedCount)
-        })
-    })
+    // app.post('/addCategories', (req, res) => {
+    //     const events = req.body;
+    //     console.log("added");
+    //     categoriesCollection.insertMany(events)
+    //     .then(result => {
+    //         res.status(200).send(result.insertedCount)
+    //     })
+    // })
+    // app.post('/addProducts', (req, res) => {
+    //     const events = req.body;
+    //     console.log("added");
+    //     productsCollection.insertMany(events)
+    //     .then(result => {
+    //         res.status(200).send(result.insertedCount)
+    //     })
+    // })
 
     app.get('/category', (req, res) => {
         categoriesCollection.find({})
@@ -170,6 +170,27 @@ client.connect(err => {
             img: Buffer.from(encImg, 'base64')
         };
         categoriesCollection.insertOne({category, images})
+        .then(result => {
+            res.send(result.insertedCount > 0);
+        })
+        
+    })
+
+    app.post('/addProduct', (req, res) => {
+        const file = req.files.file;
+        const category = req.body.category;
+        const title = req.body.title;
+        const price = req.body.price;
+        
+        const newImg = file.data;
+        const encImg = newImg.toString('base64');
+
+        const images = {
+            contentType: file.mimetype,
+            size: file.size,
+            img: Buffer.from(encImg, 'base64')
+        };
+        productsCollection.insertOne({category, title, price, images})
         .then(result => {
             res.send(result.insertedCount > 0);
         })

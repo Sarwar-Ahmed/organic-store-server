@@ -1,8 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-// const fs = require('fs-extra');
-// const fileUpload = require('express-fileupload');
+const fs = require('fs-extra');
+const fileUpload = require('express-fileupload');
 const MongoClient = require('mongodb').MongoClient;
 require('dotenv').config();
 
@@ -11,8 +11,8 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
-// app.use(express.static('service'));
-// app.use(fileUpload());
+app.use(express.static('service'));
+app.use(fileUpload());
 
 const admin = require('firebase-admin');
 
@@ -155,6 +155,25 @@ client.connect(err => {
         .then((result) => {
             console.log(result);
         })
+    })
+
+    app.post('/addCategory', (req, res) => {
+        const file = req.files.file;
+        const category = req.body.category;
+        
+        const newImg = file.data;
+        const encImg = newImg.toString('base64');
+
+        const images = {
+            contentType: file.mimetype,
+            size: file.size,
+            img: Buffer.from(encImg, 'base64')
+        };
+        categoriesCollection.insertOne({category, images})
+        .then(result => {
+            res.send(result.insertedCount > 0);
+        })
+        
     })
 
 });
